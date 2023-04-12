@@ -89,6 +89,7 @@ def process_annotations(basedir, image_subfolder = 'simpsons_dataset', validatio
             else:
                 val_meta.append(all_imgs[key])
 
+        # TODO: BG is class 1 or 0 (recheck!!!)
         classes_count['BG'] = 0
         class_mapping['BG'] = len(class_mapping) + 1
         print('Training images per class ({} classes) :'.format(len(classes_count)))
@@ -116,7 +117,7 @@ def register_simpson(basedir):
         DatasetRegistry.register(name, lambda x=split: SimpsonDemo(basedir, x))
         DatasetRegistry.register_metadata(name, "class_names", class_names)
 
-
+# TODO: data class is wrong order, need to be fixed
 def test_data_visuals():
     basedir = './data/simpson'
 
@@ -145,10 +146,11 @@ def test_data_visuals():
         vis = draw_annotation(im, r["boxes"], r["class"])
 
         if np.random.randint(0, 100) < (visual_percentage * 100):
-            print('File visualized: ', r['file_name'])
+            visual_name = f'{idx}.png'
             img = Image.fromarray(vis, 'RGB')
-            output_path = os.path.join(visualization_folder, f'{idx}.png')
+            output_path = os.path.join(visualization_folder, visual_name)
             img.save(output_path)
+            print('File: ', r['file_name'], ' visualized as: ', visual_name)
 
     print('Example data visualizations are in ', visualization_folder)
 
