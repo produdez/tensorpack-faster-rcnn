@@ -5,6 +5,7 @@ from dataset import DatasetSplit, DatasetRegistry
 import pandas as pd
 import random
 import pprint
+from config import config as cfg # TODO: remove later
 
 # Stolen link: https://github.com/duckrabbits/ObjectDetection/blob/master/model/parser.py
 __all__ = ["register_simpson"]
@@ -109,14 +110,17 @@ def register_simpson(basedir):
 
 if __name__ == '__main__':
     basedir = './data/simpson'
-    process_annotations(basedir)
+    # process_annotations(basedir)
+    cfg.DATA.CLASS_NAMES = ['BG', 'abraham_grampa_simpson', 'apu_nahasapeemapetilon', 'bart_simpson', 'charles_montgomery_burns', 'chief_wiggum', 'comic_book_guy', 'edna_krabappel', 'homer_simpson', 'kent_brockman', 'krusty_the_clown', 'lisa_simpson', 'marge_simpson', 'milhouse_van_houten', 'moe_szyslak', 'ned_flanders', 'nelson_muntz', 'principal_skinner', 'sideshow_bob']
     roidbs = SimpsonDemo(basedir, "train").training_roidbs()
     print("#images:", len(roidbs))
 
     from viz import draw_annotation
-    from tensorpack.utils.viz import interactive_imshow as imshow
+    # from tensorpack.utils.viz import interactive_imshow as imshow
+    from google.colab.patches import cv2_imshow
+
     import cv2
     for r in roidbs:
         im = cv2.imread(r["file_name"])
         vis = draw_annotation(im, r["boxes"], r["class"])
-        imshow(vis)
+        cv2_imshow(vis)
