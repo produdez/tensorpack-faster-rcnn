@@ -43,6 +43,10 @@ def process_annotations(basedir, image_subfolder = 'simpsons_dataset', validatio
     class_mapping = {}
     all_imgs = {}
 
+    classes_count['BG'] = 0
+    class_mapping['BG'] = 0
+
+
     with open(annotation_file,'r') as f:
         print('Parsing annotation files')
         for line in f:
@@ -65,7 +69,7 @@ def process_annotations(basedir, image_subfolder = 'simpsons_dataset', validatio
                 classes_count[class_name] += 1
 
             if class_name not in class_mapping:
-                class_mapping[class_name] = len(class_mapping) + 1
+                class_mapping[class_name] = len(class_mapping)
                 # this means first class is 1, second is 2, ...
 
             if filename not in all_imgs:
@@ -89,9 +93,6 @@ def process_annotations(basedir, image_subfolder = 'simpsons_dataset', validatio
             else:
                 val_meta.append(all_imgs[key])
 
-        # TODO: BG is class 1 or 0 (recheck!!!)
-        classes_count['BG'] = 0
-        class_mapping['BG'] = len(class_mapping) + 1
         print('Training images per class ({} classes) :'.format(len(classes_count)))
         pprint.pprint(classes_count)
 
@@ -117,7 +118,6 @@ def register_simpson(basedir):
         DatasetRegistry.register(name, lambda x=split: SimpsonDemo(basedir, x))
         DatasetRegistry.register_metadata(name, "class_names", class_names)
 
-# TODO: data class is wrong order, need to be fixed
 def test_data_visuals():
     basedir = './data/simpson'
 
