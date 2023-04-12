@@ -97,7 +97,7 @@ def predict_folder(predictor, folder_name):
         file_path = os.path.join(folder_name, file)
         do_predict(predictor, file_path)
 
-def do_predict(pred_func, input_file, output_folder = './prediction'):
+def do_predict(pred_func, input_file, output_folder = './prediction', show=False):
     if not os.path.isdir(output_folder): os.mkdir(output_folder)
 
     img = cv2.imread(input_file, cv2.IMREAD_COLOR)
@@ -112,7 +112,7 @@ def do_predict(pred_func, input_file, output_folder = './prediction'):
     output_path = os.path.join(output_folder, output_filename)
     cv2.imwrite(output_path, viz)
     logger.info("Inference output for {} written to {}".format(input_file, output_path))
-    tpviz.interactive_imshow(viz)
+    if show: tpviz.interactive_imshow(viz)
 
 
 if __name__ == '__main__':
