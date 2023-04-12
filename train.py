@@ -102,12 +102,14 @@ if __name__ == '__main__':
         else:
             session_init = SmartInit(cfg.BACKBONE.WEIGHTS)
 
+    MAX_EPOCH = cfg.TRAIN.LR_SCHEDULE[-1] * factor // stepnum
+    logger.info(f'MAX EPOCH= {MAX_EPOCH}')
     traincfg = TrainConfig(
         model=MODEL,
         data=QueueInput(train_dataflow),
         callbacks=callbacks,
         steps_per_epoch=stepnum,
-        max_epoch=cfg.TRAIN.LR_SCHEDULE[-1] * factor // stepnum,
+        max_epoch=MAX_EPOCH,
         session_init=session_init,
         starting_epoch=cfg.TRAIN.STARTING_EPOCH
     )
