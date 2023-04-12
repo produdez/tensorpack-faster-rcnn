@@ -30,6 +30,7 @@ class SimpsonDemo(DatasetSplit):
             'file_name': val['file_name'],
             'boxes' : np.asarray(val['boxes'], dtype=np.float32),
             'class' : np.asarray(val['class'], dtype=np.int32),
+            'is_crowd': np.asarray( [0], dtype=np.int8),
         }, obj)
         
         return list(formated)

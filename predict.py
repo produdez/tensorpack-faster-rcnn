@@ -92,8 +92,12 @@ def do_evaluate(pred_config, output_file):
         output = output_file + '-' + dataset
         DatasetRegistry.get(dataset).eval_inference_results(all_results, output)
 
+def predict_folder(predictor, folder_name):
+    for file in os.listdir(folder_name):
+        file_path = os.path.join(folder_name, file)
+        do_predict(predictor, file_path)
 
-def do_predict(pred_func, input_file):
+def do_predict(pred_func, input_file, output_folder = './prediction'):
     img = cv2.imread(input_file, cv2.IMREAD_COLOR)
     results = predict_image(img, pred_func)
     if cfg.MODE_MASK:
@@ -101,8 +105,11 @@ def do_predict(pred_func, input_file):
     else:
         final = draw_final_outputs(img, results)
     viz = np.concatenate((img, final), axis=1)
-    cv2.imwrite("output.png", viz)
-    logger.info("Inference output for {} written to output.png".format(input_file))
+
+    output_filename = f"pred_{input_file.split('/')[-1]}.png"
+    output_path = os.path.join(output_folder, output_filename)
+    cv2.imwrite(output_path, viz)
+    logger.info("Inference output for {} written to {}".format(input_file, output_path))
     tpviz.interactive_imshow(viz)
 
 
@@ -119,7 +126,7 @@ if __name__ == '__main__':
                         nargs='+')
     parser.add_argument('--output-pb', help='Save a model to .pb')
     parser.add_argument('--output-serving', help='Save a model to serving file')
-
+    parser.add_argument('--predict-folder', help='Predict a whole folder')
     args = parser.parse_args()
     if args.config:
         cfg.update_args(args.config)
@@ -136,7 +143,7 @@ if __name__ == '__main__':
     assert args.load
     finalize_configs(is_training=False)
 
-    if args.predict or args.visualize:
+    if args.predict or args.visualize or args.predict_folder:
         cfg.TEST.RESULT_SCORE_THRESH = cfg.TEST.RESULT_SCORE_THRESH_VIS
 
     if args.visualize:
@@ -153,7 +160,10 @@ if __name__ == '__main__':
         elif args.output_serving:
             ModelExporter(predcfg).export_serving(args.output_serving)
 
-        if args.predict:
+        if args.predict_folder:
+            predictor = OfflinePredictor(predcfg)
+            predict_folder(predictor, args.predict_folder)
+        elif args.predict:
             predictor = OfflinePredictor(predcfg)
             for image_file in args.predict:
                 do_predict(predictor, image_file)
