@@ -15,7 +15,7 @@ from tensorpack.tfutils import SmartInit, get_tf_version_tuple
 from tensorpack.tfutils.export import ModelExporter
 from tensorpack.utils import fs, logger
 
-from dataset import DatasetRegistry, register_coco, register_balloon
+from dataset import DatasetRegistry, register_coco, register_balloon, register_simpson
 from config import config as cfg
 from config import finalize_configs
 from data import get_eval_dataflow, get_train_dataflow
@@ -125,6 +125,7 @@ if __name__ == '__main__':
         cfg.update_args(args.config)
     register_coco(cfg.DATA.BASEDIR)  # add COCO datasets to the registry
     register_balloon(cfg.DATA.BASEDIR)
+    register_simpson(cfg.DATA.BASEDIR)
 
     MODEL = ResNetFPNModel() if cfg.MODE_FPN else ResNetC4Model()
 
@@ -160,10 +161,10 @@ if __name__ == '__main__':
             assert args.evaluate.endswith('.json'), args.evaluate
             do_evaluate(predcfg, args.evaluate)
         elif args.benchmark:
-            df = get_eval_dataflow(cfg.DATA.VAL[0])
-            df.reset_state()
+            obj = get_eval_dataflow(cfg.DATA.VAL[0])
+            obj.reset_state()
             predictor = OfflinePredictor(predcfg)
-            for _, img in enumerate(tqdm.tqdm(df, total=len(df), smoothing=0.5)):
+            for _, img in enumerate(tqdm.tqdm(obj, total=len(obj), smoothing=0.5)):
                 # This includes post-processing time, which is done on CPU and not optimized
                 # To exclude it, modify `predict_image`.
                 predict_image(img[0], predictor)
