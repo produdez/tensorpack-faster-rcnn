@@ -48,10 +48,12 @@ def process_annotations(basedir, image_subfolder = 'simpsons_dataset', validatio
         for line in f:
             line_split = line.strip().split(',')
             (filename,x1,y1,x2,y2,class_name) = line_split
+            x1, y1, x2, y2 = [int(x) for x in [x1, y1, x2, y2]]
 
             # !MAKE SURE BOUNDING BOX IS VALID
-            if x1 == x2 or y1 == y2: continue
-
+            area = (x2 - x1 + 1) * (y2 - y1 + 1)
+            if area <= 0: continue
+            
             # Remove leading '/character' in filename
             filename = os.path.join(basedir, image_subfolder + filename[12:])
             # update class count
@@ -67,9 +69,7 @@ def process_annotations(basedir, image_subfolder = 'simpsons_dataset', validatio
             if filename not in all_imgs:
                 all_imgs[filename] = {}
                 all_imgs[filename]['file_name'] = filename
-                all_imgs[filename]['boxes'] = [[
-                    int(val) for val in [x1,y1, x2, y2]
-                ]]
+                all_imgs[filename]['boxes'] = [[x1,y1, x2, y2]]
                 all_imgs[filename]['class'] = [class_mapping[class_name]]
 
                 # determine train or validation set 
