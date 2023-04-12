@@ -26,7 +26,7 @@ class SimpsonDemo(DatasetSplit):
         with open(json_file) as f:
             obj = json.load(f)[self.split]
         
-        formated = map(lambda _, val: {
+        formated = map(lambda val: {
             'file_name': val['file_name'],
             'boxes' : np.asarray(val['boxes'], dtype=np.float32),
             'class' : np.asarray(val['class'], dtype=np.int32),
@@ -127,6 +127,8 @@ if __name__ == '__main__':
 
     import cv2
     for r in roidbs:
+        print('testing')
+        pprint.pprint(r)
         im = cv2.imread(r["file_name"])
         
         vis = draw_annotation(im, r["boxes"], r["class"])
