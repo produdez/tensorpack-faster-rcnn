@@ -4,24 +4,28 @@ import json
 from dataset import DatasetSplit, DatasetRegistry
 import pandas as pd
 import random
-from pprint import pprint
+import pprint
+
 # Stolen link: https://github.com/duckrabbits/ObjectDetection/blob/master/model/parser.py
 __all__ = ["register_simpson"]
 
 
 class SimpsonDemo(DatasetSplit):
-    def __init__(self, base_dir, split):
+    def __init__(self, base_dir, split, image_subfolder = 'simpsons_dataset'):
         assert split in ["train", "val"]
         base_dir = os.path.expanduser(base_dir)
-        self.imgdir = os.path.join(base_dir, split)
+        self.imgdir = os.path.join(base_dir, image_subfolder)
         self.base_dir = base_dir
+        self.split = split
         assert os.path.isdir(self.imgdir), self.imgdir
 
 
     def training_roidbs(self):
-        # TODO: read annotation from the correct file
-        pass
+        json_file = os.path.join(self.base_dir, "annotations.json")
+        with open(json_file) as f:
+            obj = json.load(f)
 
+        return obj[self.split]
 
 
 
@@ -75,35 +79,44 @@ def process_annotations(basedir, image_subfolder = 'simpsons_dataset', validatio
             else:
                 val_meta.append(all_imgs[key])
 
-        classes_count['bg'] = 0
-        class_mapping['bg'] = len(class_mapping) + 1
+        classes_count['BG'] = 0
+        class_mapping['BG'] = len(class_mapping) + 1
         print('Training images per class ({} classes) :'.format(len(classes_count)))
         pprint.pprint(classes_count)
 
     # write to files
     with open(os.path.join(basedir, 'annotations.json'), 'w') as fw:
         json.dump({
-            'train': train_meta, 
-            'val': val_meta,
             'classes' : {
                 'count' : classes_count,
                 'mapping' : class_mapping
-            }
-        }, fw)
+            },
+            'train': train_meta, 
+            'val': val_meta,
+        }, fw, indent=4)
 
 def register_simpson(basedir):
+    process_annotations(basedir)
+    json_file = os.path.join(basedir, "annotations.json")
+    with open(json_file) as f:
+        obj = json.load(f)
+    class_names = list(obj['classes']['mapping'].keys())
+    for split in ['train', 'val']:
+        name = "simpson_" + split
+        DatasetRegistry.register(name, lambda x=split: SimpsonDemo(basedir, x))
+        DatasetRegistry.register_metadata(name, "class_names", class_names)
     pass
 
 if __name__ == '__main__':
     basedir = './data/simpson'
     process_annotations(basedir)
-    # roidbs = SimpsonDemo(basedir, "train").training_roidbs()
-    # print("#images:", len(roidbs))
+    roidbs = SimpsonDemo(basedir, "train").training_roidbs()
+    print("#images:", len(roidbs))
 
-    # from viz import draw_annotation
-    # from tensorpack.utils.viz import interactive_imshow as imshow
-    # import cv2
-    # for r in roidbs:
-    #     im = cv2.imread(r["file_name"])
-    #     vis = draw_annotation(im, r["boxes"], r["class"], r["segmentation"])
-    #     imshow(vis)
+    from viz import draw_annotation
+    from tensorpack.utils.viz import interactive_imshow as imshow
+    import cv2
+    for r in roidbs:
+        im = cv2.imread(r["file_name"])
+        vis = draw_annotation(im, r["boxes"], r["class"])
+        imshow(vis)
