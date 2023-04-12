@@ -137,7 +137,7 @@ def test_data_visuals():
     visualization_folder = os.path.join(basedir, 'temp_output')
     if not os.path.isdir(visualization_folder): os.mkdir(visualization_folder)
 
-    visual_percentage = 0.1
+    visual_percentage = 0.01
 
     for idx, r in enumerate(roidbs):
         im = cv2.imread(r["file_name"])
