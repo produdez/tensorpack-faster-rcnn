@@ -36,7 +36,6 @@ class SimpsonDemo(DatasetSplit):
 
 
 
-
 def process_annotations(basedir, image_subfolder = 'simpsons_dataset', validation_size = 0.2):
     # write the final annotation to two separate files
     annotation_file = os.path.join(basedir, "annotation.txt")
@@ -50,9 +49,11 @@ def process_annotations(basedir, image_subfolder = 'simpsons_dataset', validatio
             line_split = line.strip().split(',')
             (filename,x1,y1,x2,y2,class_name) = line_split
 
+            # !MAKE SURE BOUNDING BOX IS VALID
+            if x1 == x2 or y1 == y2: continue
+
             # Remove leading '/character' in filename
             filename = os.path.join(basedir, image_subfolder + filename[12:])
-            # TODO: file path is wrong, fix it.
             # update class count
             if class_name not in classes_count:
                 classes_count[class_name] = 1
@@ -112,24 +113,39 @@ def register_simpson(basedir):
         name = "simpson_" + split
         DatasetRegistry.register(name, lambda x=split: SimpsonDemo(basedir, x))
         DatasetRegistry.register_metadata(name, "class_names", class_names)
-    pass
 
-if __name__ == '__main__':
+
+def test_data_visuals():
     basedir = './data/simpson'
-    # process_annotations(basedir)
-    cfg.DATA.CLASS_NAMES = ['BG', 'abraham_grampa_simpson', 'apu_nahasapeemapetilon', 'bart_simpson', 'charles_montgomery_burns', 'chief_wiggum', 'comic_book_guy', 'edna_krabappel', 'homer_simpson', 'kent_brockman', 'krusty_the_clown', 'lisa_simpson', 'marge_simpson', 'milhouse_van_houten', 'moe_szyslak', 'ned_flanders', 'nelson_muntz', 'principal_skinner', 'sideshow_bob']
+
+    process_annotations(basedir)
+    json_file = os.path.join(basedir, "annotations.json")
+    with open(json_file) as f:
+        obj = json.load(f)
+    class_names = list(obj['classes']['mapping'].keys())
+    cfg.DATA.CLASS_NAMES = class_names
+    
     roidbs = SimpsonDemo(basedir, "train").training_roidbs()
     print("#images:", len(roidbs))
 
+    from PIL import Image
     from viz import draw_annotation
-    # from tensorpack.utils.viz import interactive_imshow as imshow
-    from google.colab.patches import cv2_imshow
-
     import cv2
-    for r in roidbs:
-        print('testing')
-        pprint.pprint(r)
+
+    visualization_folder = os.path.join(basedir, 'temp_output')
+    if not os.path.isdir(visualization_folder): os.mkdir(visualization_folder)
+
+    for idx, r in enumerate(roidbs):
+        print('File: ', r['file_name'])
         im = cv2.imread(r["file_name"])
         
         vis = draw_annotation(im, r["boxes"], r["class"])
-        cv2_imshow(vis)
+        img = Image.fromarray(vis, 'RGB')
+        output_path = os.path.join(visualization_folder, f'{idx}.png')
+        img.save(output_path)
+
+    print('Example data visualizations are in ', visualization_folder)
+
+
+if __name__ == '__main__':
+    test_data_visuals()
