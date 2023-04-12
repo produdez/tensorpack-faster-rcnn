@@ -24,9 +24,15 @@ class SimpsonDemo(DatasetSplit):
     def training_roidbs(self):
         json_file = os.path.join(self.base_dir, "annotations.json")
         with open(json_file) as f:
-            obj = json.load(f)
-
-        return obj[self.split]
+            obj = json.load(f)[self.split]
+        
+        formated = map(lambda _, val: {
+            'file_name': val['file_name'],
+            'boxes' : np.asarray(val['boxes'], dtype=np.float32),
+            'class' : np.asarray(val['class'], dtype=np.int32),
+        }, obj)
+        
+        return list(formated)
 
 
 
@@ -122,5 +128,6 @@ if __name__ == '__main__':
     import cv2
     for r in roidbs:
         im = cv2.imread(r["file_name"])
+        
         vis = draw_annotation(im, r["boxes"], r["class"])
         cv2_imshow(vis)
