@@ -145,6 +145,7 @@ def test_data_visuals():
         vis = draw_annotation(im, r["boxes"], r["class"])
 
         if np.random.randint(0, 100) < (visual_percentage * 100):
+            print('File visualized: ', r['file_name'])
             img = Image.fromarray(vis, 'RGB')
             output_path = os.path.join(visualization_folder, f'{idx}.png')
             img.save(output_path)
