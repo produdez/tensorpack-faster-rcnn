@@ -54,8 +54,10 @@ def process_annotations(basedir, image_subfolder = 'simpsons_dataset', validatio
             area = (x2 - x1 + 1) * (y2 - y1 + 1)
             if area <= 0: continue
             
-            # Remove leading '/character' in filename
-            filename = os.path.join(basedir, image_subfolder + filename[12:])
+            #! Remove leading '/character' or '/character2' in filename
+            filename = '/'.join(filename.split('/')[2:])
+            filename = os.path.join(basedir, image_subfolder, filename) 
+
             # update class count
             if class_name not in classes_count:
                 classes_count[class_name] = 1
@@ -135,14 +137,17 @@ def test_data_visuals():
     visualization_folder = os.path.join(basedir, 'temp_output')
     if not os.path.isdir(visualization_folder): os.mkdir(visualization_folder)
 
+    visual_percentage = 0.1
+
     for idx, r in enumerate(roidbs):
-        print('File: ', r['file_name'])
         im = cv2.imread(r["file_name"])
         
         vis = draw_annotation(im, r["boxes"], r["class"])
-        img = Image.fromarray(vis, 'RGB')
-        output_path = os.path.join(visualization_folder, f'{idx}.png')
-        img.save(output_path)
+
+        if np.random.randint(0, 100) < (visual_percentage * 100):
+            img = Image.fromarray(vis, 'RGB')
+            output_path = os.path.join(visualization_folder, f'{idx}.png')
+            img.save(output_path)
 
     print('Example data visualizations are in ', visualization_folder)
 
