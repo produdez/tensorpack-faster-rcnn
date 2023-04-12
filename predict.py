@@ -98,6 +98,8 @@ def predict_folder(predictor, folder_name):
         do_predict(predictor, file_path)
 
 def do_predict(pred_func, input_file, output_folder = './prediction'):
+    if not os.path.isdir(output_folder): os.mkdir(output_folder)
+
     img = cv2.imread(input_file, cv2.IMREAD_COLOR)
     results = predict_image(img, pred_func)
     if cfg.MODE_MASK:
