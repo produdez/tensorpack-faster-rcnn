@@ -9,6 +9,7 @@ from config import config as cfg # TODO: remove later
 
 # Stolen link: https://github.com/duckrabbits/ObjectDetection/blob/master/model/parser.py
 
+CLASS_LIMIT = 2
 
 class SimpsonDemo(DatasetSplit):
     def __init__(self, base_dir, split, image_subfolder = 'simpsons_dataset'):
@@ -69,15 +70,18 @@ def process_annotations(basedir, image_subfolder = 'simpsons_dataset', validatio
             filename = '/'.join(filename.split('/')[2:])
             filename = os.path.join(basedir, image_subfolder, filename) 
 
+
+
+            if class_name not in class_mapping:
+                if len(class_mapping) > CLASS_LIMIT: continue
+                class_mapping[class_name] = len(class_mapping)
+                # this means first class is 1, second is 2, ...
+            
             # update class count
             if class_name not in classes_count:
                 classes_count[class_name] = 1
             else:
                 classes_count[class_name] += 1
-
-            if class_name not in class_mapping:
-                class_mapping[class_name] = len(class_mapping)
-                # this means first class is 1, second is 2, ...
 
             if filename not in all_imgs:
                 all_imgs[filename] = {}
