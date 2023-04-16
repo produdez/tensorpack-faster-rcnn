@@ -31,7 +31,7 @@ if __name__ == '__main__':
     parser.add_argument('--logdir', help='Log directory. Will remove the old one if already exists.',
                         default='train_log/maskrcnn')
     parser.add_argument('--config', help="A list of KEY=VALUE to overwrite those defined in config.py", nargs='+')
-    parser.add_argument('--max-epochs', help='Maximum number of training epoch (OVERRIDE)')
+    parser.add_argument('--max-epochs', help='Maximum number of training epoch (OVERRIDE)', type=int, required=False, default=None)
     args = parser.parse_args()
     if args.config:
         cfg.update_args(args.config)
