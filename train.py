@@ -103,7 +103,7 @@ if __name__ == '__main__':
             session_init = SmartInit(cfg.BACKBONE.WEIGHTS)
 
     MAX_EPOCH = cfg.TRAIN.LR_SCHEDULE[-1] * factor // stepnum
-    if cfg.max_epochs: MAX_EPOCH = cfg.max_epochs
+    if args.max_epochs: MAX_EPOCH = args.max_epochs
     logger.info(f'MAX EPOCH= {MAX_EPOCH}')
     traincfg = TrainConfig(
         model=MODEL,
