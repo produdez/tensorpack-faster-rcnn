@@ -39,7 +39,7 @@ class SimpsonDemo(DatasetSplit):
 
 
 
-def process_annotations(basedir, image_subfolder = 'simpsons_dataset', validation_size = 0.2):
+def process_annotations(basedir, image_subfolder = 'simpsons_dataset', validation_size = 0.99):
     # write the final annotation to two separate files
     annotation_file = os.path.join(basedir, "annotation.txt")
     classes_count = {}
@@ -90,7 +90,7 @@ def process_annotations(basedir, image_subfolder = 'simpsons_dataset', validatio
                 all_imgs[filename]['class'] = [class_mapping[class_name]]
 
                 # determine train or validation set 
-                validation_threshold = int(validation_size * 100)
+                validation_threshold = int(validation_size * 100) - 1
                 if np.random.randint(0, 100) > validation_threshold:
                     all_imgs[filename]['imageset'] = 'train'
                 else:
@@ -118,10 +118,10 @@ def process_annotations(basedir, image_subfolder = 'simpsons_dataset', validatio
             'val': val_meta,
         }, fw, indent=4)
 
-def register_simpson(basedir):
+def register_simpson(basedir, process_raw_annotations=True):
     # TODO: fix major bug cause if you process annotations here then you cant register other data sets to train them!!!!
     if basedir.split('/')[-1] != 'simpson': return
-    process_annotations(basedir) 
+    if process_raw_annotations: process_annotations(basedir) 
     json_file = os.path.join(basedir, "annotations.json")
     with open(json_file) as f:
         obj = json.load(f)
