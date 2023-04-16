@@ -43,8 +43,9 @@ def process_annotations(basedir, image_subfolder = 'simpsons_dataset', validatio
     class_mapping = {}
     all_imgs = {}
 
-    # classes_count['BG'] = 0
-    # class_mapping['BG'] = 0
+    # TODO: if you want to remove this, then you must also change how classes are added to frame work
+    classes_count['BG'] = 0
+    class_mapping['BG'] = 0
 
 
     with open(annotation_file,'r') as f:
@@ -72,7 +73,7 @@ def process_annotations(basedir, image_subfolder = 'simpsons_dataset', validatio
                 classes_count[class_name] += 1
 
             if class_name not in class_mapping:
-                class_mapping[class_name] = len(class_mapping) + 1
+                class_mapping[class_name] = len(class_mapping)
                 # this means first class is 1, second is 2, ...
 
             if filename not in all_imgs:
