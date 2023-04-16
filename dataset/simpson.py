@@ -56,12 +56,12 @@ def process_annotations(basedir, image_subfolder = 'simpsons_dataset', validatio
         for line in f:
             line_split = line.strip().split(',')
             (filename,x1,y1,x2,y2,class_name) = line_split
-            x1, y1, x2, y2 = [int(x) for x in [x1, y1, x2, y2]]
+            x1, y1, x2, y2 = [int(x) + 0.5 for x in [x1, y1, x2, y2]]
 
             x1, x2 = min(x1,x2), max(x1,x2)
             y1, y2 = min(y1,y2), max(y1,y2)
             # !MAKE SURE BOUNDING BOX IS VALID
-            area = (x2 - x1 + 0.5) * (y2 - y1 + 0.5)
+            area = (x2 - x1) * (y2 - y1)
 
             if area <= 0: continue
             
