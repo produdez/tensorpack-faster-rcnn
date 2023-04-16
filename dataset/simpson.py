@@ -32,7 +32,9 @@ class SimpsonDemo(DatasetSplit):
             'is_crowd': np.asarray( [0], dtype=np.int8),
         }, obj)
         
-        return list(formated)
+        result = list(formated)
+        print('Example roidb: ', result[0])
+        return result
 
 
 
