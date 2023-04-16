@@ -31,7 +31,7 @@ if __name__ == '__main__':
     parser.add_argument('--logdir', help='Log directory. Will remove the old one if already exists.',
                         default='train_log/maskrcnn')
     parser.add_argument('--config', help="A list of KEY=VALUE to overwrite those defined in config.py", nargs='+')
-
+    parser.add_argument('--max-epochs', help='Maximum number of training epoch (OVERRIDE)')
     args = parser.parse_args()
     if args.config:
         cfg.update_args(args.config)
@@ -103,6 +103,7 @@ if __name__ == '__main__':
             session_init = SmartInit(cfg.BACKBONE.WEIGHTS)
 
     MAX_EPOCH = cfg.TRAIN.LR_SCHEDULE[-1] * factor // stepnum
+    if cfg.max_epoch: MAX_EPOCH = cfg.max_epoch
     logger.info(f'MAX EPOCH= {MAX_EPOCH}')
     traincfg = TrainConfig(
         model=MODEL,

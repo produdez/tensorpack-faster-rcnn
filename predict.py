@@ -102,6 +102,8 @@ def do_predict(pred_func, input_file, output_folder = './prediction', show=False
 
     img = cv2.imread(input_file, cv2.IMREAD_COLOR)
     results = predict_image(img, pred_func)
+    logger.info(f'Prediction results: {results}')
+    if not results: logger.warning('Empty predictions!')
     if cfg.MODE_MASK:
         final = draw_final_outputs_blackwhite(img, results)
     else:

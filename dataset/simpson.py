@@ -8,7 +8,6 @@ import pprint
 from config import config as cfg # TODO: remove later
 
 # Stolen link: https://github.com/duckrabbits/ObjectDetection/blob/master/model/parser.py
-__all__ = ["register_simpson"]
 
 
 class SimpsonDemo(DatasetSplit):
@@ -44,8 +43,8 @@ def process_annotations(basedir, image_subfolder = 'simpsons_dataset', validatio
     class_mapping = {}
     all_imgs = {}
 
-    classes_count['BG'] = 0
-    class_mapping['BG'] = 0
+    # classes_count['BG'] = 0
+    # class_mapping['BG'] = 0
 
 
     with open(annotation_file,'r') as f:
@@ -55,8 +54,11 @@ def process_annotations(basedir, image_subfolder = 'simpsons_dataset', validatio
             (filename,x1,y1,x2,y2,class_name) = line_split
             x1, y1, x2, y2 = [int(x) for x in [x1, y1, x2, y2]]
 
+            x1, x2 = min(x1,x2), max(x1,x2)
+            y1, y2 = min(y1,y2), max(y1,y2)
             # !MAKE SURE BOUNDING BOX IS VALID
             area = (x2 - x1 + 1) * (y2 - y1 + 1)
+
             if area <= 0: continue
             
             #! Remove leading '/character' or '/character2' in filename
@@ -70,7 +72,7 @@ def process_annotations(basedir, image_subfolder = 'simpsons_dataset', validatio
                 classes_count[class_name] += 1
 
             if class_name not in class_mapping:
-                class_mapping[class_name] = len(class_mapping)
+                class_mapping[class_name] = len(class_mapping) + 1
                 # this means first class is 1, second is 2, ...
 
             if filename not in all_imgs:
@@ -109,7 +111,9 @@ def process_annotations(basedir, image_subfolder = 'simpsons_dataset', validatio
         }, fw, indent=4)
 
 def register_simpson(basedir):
-    process_annotations(basedir)
+    # TODO: fix major bug cause if you process annotations here then you cant register other data sets to train them!!!!
+    if basedir.split('/')[-1] != 'simpson': return
+    process_annotations(basedir) 
     json_file = os.path.join(basedir, "annotations.json")
     with open(json_file) as f:
         obj = json.load(f)
