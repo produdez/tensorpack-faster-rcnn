@@ -47,7 +47,8 @@ def process_annotations(basedir, image_subfolder = 'simpsons_dataset', validatio
     classes_count['BG'] = 0
     class_mapping['BG'] = 0
 
-
+    # {'file_name': './data/simpson/simpsons_dataset/abraham_grampa_simpson/pic_0000.jpg', 'boxes': array([[52., 72., 57., 72.]], dtype=float32), 'class': array([1], dtype=int32), 'is_crowd': array([0], dtype=int8)}
+    # {'file_name': './data/balloon/train/34020010494_e5cb88e1c4_k.jpg', 'boxes': array([[ 994.5,  619.5, 1445.5, 1166.5]], dtype=float32), 'class': array([1], dtype=int32), 'is_crowd': array([0], dtype=int8)}
     with open(annotation_file,'r') as f:
         print('Parsing annotation files')
         for line in f:
@@ -58,7 +59,7 @@ def process_annotations(basedir, image_subfolder = 'simpsons_dataset', validatio
             x1, x2 = min(x1,x2), max(x1,x2)
             y1, y2 = min(y1,y2), max(y1,y2)
             # !MAKE SURE BOUNDING BOX IS VALID
-            area = (x2 - x1 + 1) * (y2 - y1 + 1)
+            area = (x2 - x1 + 0.5) * (y2 - y1 + 0.5)
 
             if area <= 0: continue
             
