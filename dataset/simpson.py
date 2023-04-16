@@ -9,7 +9,7 @@ from config import config as cfg # TODO: remove later
 
 # Stolen link: https://github.com/duckrabbits/ObjectDetection/blob/master/model/parser.py
 
-CLASS_LIMIT = 2
+CLASS_LIMIT = 99
 
 class SimpsonDemo(DatasetSplit):
     def __init__(self, base_dir, split, image_subfolder = 'simpsons_dataset'):
@@ -39,7 +39,7 @@ class SimpsonDemo(DatasetSplit):
 
 
 
-def process_annotations(basedir, image_subfolder = 'simpsons_dataset', validation_size = 0.99):
+def process_annotations(basedir, image_subfolder = 'simpsons_dataset', validation_size = 0.95):
     # write the final annotation to two separate files
     annotation_file = os.path.join(basedir, "annotation.txt")
     classes_count = {}
@@ -96,6 +96,8 @@ def process_annotations(basedir, image_subfolder = 'simpsons_dataset', validatio
                 else:
                     all_imgs[filename]['imageset'] = 'val'
 
+        # NOTE: there's a chance that some class is empty in training dataset
+        # TODO: make sure all classes are in training dataset
         train_meta = []
         val_meta = []
         for key in all_imgs:
