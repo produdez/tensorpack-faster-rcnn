@@ -98,9 +98,10 @@ def process_annotations(basedir, image_subfolder = 'simpsons_dataset', validatio
         training_counter = {key : train_threshold for key in classes_count.keys()}
         train_meta = []
         val_meta = []
-        random.shuffle(all_imgs)
-
-        for key in all_imgs:
+        
+        image_keys = all_imgs.keys()
+        random.shuffle(image_keys)
+        for key in image_keys:
             classname = all_imgs[key]['classname'][0]
             if training_counter[classname] >= 0:
                 train_meta.append(all_imgs[key])
