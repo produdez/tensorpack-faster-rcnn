@@ -40,7 +40,7 @@ class SimpsonDemo(DatasetSplit):
 
 
 
-def process_annotations(basedir, image_subfolder = 'simpsons_dataset', validation_size = 0.95):
+def process_annotations(basedir, image_subfolder = 'simpsons_dataset', validation_size = 0.98):
     # write the final annotation to two separate files
     annotation_file = os.path.join(basedir, "annotation.txt")
     classes_count = {}
