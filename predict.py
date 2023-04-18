@@ -93,9 +93,15 @@ def do_evaluate(pred_config, output_file):
         DatasetRegistry.get(dataset).eval_inference_results(all_results, output)
 
 def predict_folder(predictor, folder_name):
+    valid_results = []
     for file in os.listdir(folder_name):
         file_path = os.path.join(folder_name, file)
-        do_predict(predictor, file_path)
+        result = do_predict(predictor, file_path)
+        if result: valid_results.append(result)
+    
+    if not valid_results:
+        logger.warning('NO VALID RESULT IN THE WHOLE PREDICTION SET')
+
 
 def do_predict(pred_func, input_file, output_folder = './prediction', show=False):
     if not os.path.isdir(output_folder): os.mkdir(output_folder)
@@ -114,7 +120,7 @@ def do_predict(pred_func, input_file, output_folder = './prediction', show=False
     cv2.imwrite(output_path, viz)
     logger.info("Inference output for {} written to {}".format(input_file, output_path))
     if show: tpviz.interactive_imshow(viz)
-
+    return results
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
