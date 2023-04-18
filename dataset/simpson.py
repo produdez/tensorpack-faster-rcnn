@@ -1,3 +1,4 @@
+import math
 import os
 import numpy as np
 import json
@@ -46,7 +47,7 @@ def process_annotations(basedir, image_subfolder = 'simpsons_dataset', validatio
     class_mapping = {}
     all_imgs = {}
 
-    # TODO: if you want to remove this, then you must also change how classes are added to frame work
+    # NOTE: if you want to remove this, then you must also change how classes are added to frame work
     classes_count['BG'] = 0
     class_mapping['BG'] = 0
 
@@ -88,26 +89,28 @@ def process_annotations(basedir, image_subfolder = 'simpsons_dataset', validatio
                 all_imgs[filename]['file_name'] = filename
                 all_imgs[filename]['boxes'] = [[x1,y1, x2, y2]]
                 all_imgs[filename]['class'] = [class_mapping[class_name]]
+                all_imgs[filename]['classname'] = [class_name]
 
-                # determine train or validation set 
-                validation_threshold = int(validation_size * 100) - 1
-                if np.random.randint(0, 100) > validation_threshold:
-                    all_imgs[filename]['imageset'] = 'train'
-                else:
-                    all_imgs[filename]['imageset'] = 'val'
 
-        # NOTE: there's a chance that some class is empty in training dataset
-        # TODO: make sure all classes are in training dataset
+        # NOTE: Train size will try to have balance of classes and also no class is missing from training set
+        min_size,  _ = max(zip(classes_count.values(), classes_count.keys()))
+        train_threshold = math.ceil((1 - validation_size) * min_size)
+        training_counter = {key : train_threshold for key in classes_count.keys()}
         train_meta = []
         val_meta = []
+        random.shuffle(all_imgs)
+
         for key in all_imgs:
-            if all_imgs[key]['imageset'] == 'train':
+            classname = all_imgs[key]['classname'][0]
+            if training_counter[classname] >= 0:
                 train_meta.append(all_imgs[key])
+                training_counter[classname] -= 1
             else:
                 val_meta.append(all_imgs[key])
 
         print('Training images per class ({} classes) :'.format(len(classes_count)))
         pprint.pprint(classes_count)
+        print(f'Train size: {len(train_meta)}, validation size: {len(val_meta)}')
 
     # write to files
     with open(os.path.join(basedir, 'annotations.json'), 'w') as fw:
