@@ -13,6 +13,28 @@ from config import config as cfg # TODO: remove later
 # CLASS_LIMIT = 10
 CLASS_LIMIT = 99
 
+'''
+    ! IMPORTANT TRAINING NOTE:
+        FOLLOW THESE GUIDELINES IF YOU LIKE THE MODEL TO MAKE ANY PROPER PREDICTIONS AT ALL.
+        -- these are from my own experiment with the model and simpson dataset (very large with lots of classes) --
+    1. Data size is very important: the more classes are trained, the MORE DATA NEEDED
+        Successful train on:
+        - 2 classes -> 0.02 train size
+        - 5 classes -> 0.05 train size
+        - 10 classes -> 0.2 train size
+        - 18 (all) classes -> 0.8 train size
+    2. Training should at least pass through the whole training set ONCE.
+        So pay attention to `TRAIN.LR_SCHEDULE`
+        And try to make sure that (in the logged output) -> "Total passes of the training set is:" >= 1
+    3. If your training metrics starts to show results as NAN -> Likely failed and will give no predictions
+        Ex: total_cost: 0.34688
+            wd_cost: 0.1622
+        params should be numbers like so, not nan
+    4. Epoch size `TRAIN.STEPS_PER_EPOCH` is not that important
+        But model saving and other callbacks will be called periodically based on epoch, 
+        so smaller value means more checkpoint saving and takes more time
+    
+'''
 class SimpsonDemo(DatasetSplit):
     def __init__(self, base_dir, split, image_subfolder = 'simpsons_dataset'):
         assert split in ["train", "val"]
@@ -37,12 +59,13 @@ class SimpsonDemo(DatasetSplit):
         
         result = list(formated)
         print('Example roidb: ', result[0])
+        # {'file_name': './data/balloon/train/34020010494_e5cb88e1c4_k.jpg', 'boxes': array([[ 994.5,  619.5, 1445.5, 1166.5]], dtype=float32), 'class': array([1], dtype=int32), 'is_crowd': array([0], dtype=int8)}
         return result
 
 
 
 # def process_annotations(basedir, image_subfolder = 'simpsons_dataset', validation_size = 0.7):
-def process_annotations(basedir, image_subfolder = 'simpsons_dataset', validation_size = 0.2):
+def process_annotations(basedir, image_subfolder = 'simpsons_dataset', validation_size = 0.5):
     # write the final annotation to two separate files
     annotation_file = os.path.join(basedir, "annotation.txt")
     classes_count = {}
@@ -53,8 +76,6 @@ def process_annotations(basedir, image_subfolder = 'simpsons_dataset', validatio
     classes_count['BG'] = 0
     class_mapping['BG'] = 0
 
-    # {'file_name': './data/simpson/simpsons_dataset/abraham_grampa_simpson/pic_0000.jpg', 'boxes': array([[52., 72., 57., 72.]], dtype=float32), 'class': array([1], dtype=int32), 'is_crowd': array([0], dtype=int8)}
-    # {'file_name': './data/balloon/train/34020010494_e5cb88e1c4_k.jpg', 'boxes': array([[ 994.5,  619.5, 1445.5, 1166.5]], dtype=float32), 'class': array([1], dtype=int32), 'is_crowd': array([0], dtype=int8)}
     with open(annotation_file,'r') as f:
         print('Parsing annotation files')
         for line in f:
