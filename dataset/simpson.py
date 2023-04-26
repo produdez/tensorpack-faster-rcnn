@@ -255,7 +255,6 @@ if __name__ == '__main__':
         '--visualize', help='If used, small part of the training dataset will be visualized in a subfolder inside the dataset base directory',
         action='store_true'
     )
-    parser.add_argument()
     args = parser.parse_args()
     
     # Main part
