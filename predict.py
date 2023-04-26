@@ -100,7 +100,7 @@ def predict_folder(predictor, folder_name):
         if result: valid_results.append(result)
     
     if not valid_results:
-        logger.warning('NO VALID RESULT IN THE WHOLE PREDICTION SET')
+        logger.warning('NO VALID RESULT IN THE WHOLE PREDICTION SET, your training might be invalid')
 
 
 def do_predict(pred_func, input_file, output_folder = './prediction', show=False):
@@ -119,6 +119,8 @@ def do_predict(pred_func, input_file, output_folder = './prediction', show=False
     output_path = os.path.join(output_folder, output_filename)
     cv2.imwrite(output_path, viz)
     logger.info("Inference output for {} written to {}".format(input_file, output_path))
+
+    # NOTE: this to suppress prediction error when ran on Colab since interactive visuals cannot be drawn there
     if show: tpviz.interactive_imshow(viz)
     return results
 
@@ -141,7 +143,7 @@ if __name__ == '__main__':
         cfg.update_args(args.config)
     register_coco(cfg.DATA.BASEDIR)  # add COCO datasets to the registry
     register_balloon(cfg.DATA.BASEDIR)
-    register_simpson(cfg.DATA.BASEDIR, process_raw_annotations=False)
+    register_simpson(cfg.DATA.BASEDIR, process_raw_annotations=False) # this assumes that you already parsed the simpson annotations
 
     MODEL = ResNetFPNModel() if cfg.MODE_FPN else ResNetC4Model()
 
