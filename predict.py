@@ -182,10 +182,10 @@ if __name__ == '__main__':
             assert args.evaluate.endswith('.json'), args.evaluate
             do_evaluate(predcfg, args.evaluate)
         elif args.benchmark:
-            obj = get_eval_dataflow(cfg.DATA.VAL[0])
-            obj.reset_state()
+            df = get_eval_dataflow(cfg.DATA.VAL[0])
+            df.reset_state()
             predictor = OfflinePredictor(predcfg)
-            for _, img in enumerate(tqdm.tqdm(obj, total=len(obj), smoothing=0.5)):
+            for _, img in enumerate(tqdm.tqdm(df, total=len(df), smoothing=0.5)):
                 # This includes post-processing time, which is done on CPU and not optimized
                 # To exclude it, modify `predict_image`.
                 predict_image(img[0], predictor)
