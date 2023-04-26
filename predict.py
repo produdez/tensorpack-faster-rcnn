@@ -138,7 +138,7 @@ if __name__ == '__main__':
                         nargs='+')
     parser.add_argument('--output-pb', help='Save a model to .pb')
     parser.add_argument('--output-serving', help='Save a model to serving file')
-    parser.add_argument('--predict-folder', help='Predict a whole folder')
+    parser.add_argument('--predict-folder', help='Predict a whole folder', required=False, type=str, default=None)
     parser.add_argument('--output-folder', help='Output folder for predictions', required=False, type=str, default='./prediction')
     args = parser.parse_args()
     if args.config:
