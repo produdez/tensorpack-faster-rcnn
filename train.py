@@ -19,8 +19,7 @@ try:
 except ImportError:
     pass
 
-# TODO: add a validate prediction function to test if prediction is found while trainging   
-# TODO: rmb to add option to save output to file OR NOT!!
+
 if __name__ == '__main__':
     # "spawn/forkserver" is safer than the default "fork" method and
     # produce more deterministic behavior & memory saving
