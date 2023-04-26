@@ -2,7 +2,6 @@ import os
 import numpy as np
 import json
 from dataset import DatasetSplit, DatasetRegistry
-from parse_simpson import IMAGE_SUBFOLDER
 
 '''
     Included an example.simpson.ipynb for reference (ran on colab)
@@ -36,7 +35,7 @@ from parse_simpson import IMAGE_SUBFOLDER
 '''
 
 class SimpsonDemo(DatasetSplit):
-    def __init__(self, base_dir, split, image_subfolder=IMAGE_SUBFOLDER):
+    def __init__(self, base_dir, split, image_subfolder):
         assert split in ["train", "val"]
         base_dir = os.path.expanduser(base_dir)
         self.imgdir = os.path.join(base_dir, image_subfolder)

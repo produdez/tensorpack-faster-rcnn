@@ -122,7 +122,7 @@ def process_annotations(
         }, fw, indent=4)
 
 
-def test_data_visuals(basedir, visualize_subfolder = 'temp_output'):
+def test_data_visuals(basedir, visualize_subfolder = 'temp_output', image_subfolder=IMAGE_SUBFOLDER):
     json_file = os.path.join(basedir, "annotations.json")
     with open(json_file) as f:
         obj = json.load(f)
@@ -131,7 +131,7 @@ def test_data_visuals(basedir, visualize_subfolder = 'temp_output'):
     #! This is for the draw_annotation function to know our classes
     cfg.DATA.CLASS_NAMES = class_names 
     
-    roidbs = SimpsonDemo(basedir, "train").training_roidbs()
+    roidbs = SimpsonDemo(basedir, "train", image_subfolder).training_roidbs()
 
     visualization_folder = os.path.join(basedir, visualize_subfolder)
     if not os.path.isdir(visualization_folder): os.mkdir(visualization_folder)
