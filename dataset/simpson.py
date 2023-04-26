@@ -66,6 +66,10 @@ class SimpsonDemo(DatasetSplit):
 
 # def process_annotations(basedir, image_subfolder = 'simpsons_dataset', validation_size = 0.7):
 def process_annotations(basedir, image_subfolder = 'simpsons_dataset', validation_size = 0.5):
+    print('---- Annotation Processing Params ----')
+    print(f'Number of training classes limit: {CLASS_LIMIT}')   
+    print(f'Training size: {1 - validation_size}')
+    
     # write the final annotation to two separate files
     annotation_file = os.path.join(basedir, "annotation.txt")
     classes_count = {}
@@ -135,6 +139,7 @@ def process_annotations(basedir, image_subfolder = 'simpsons_dataset', validatio
         print('Training images per class ({} classes) :'.format(len(classes_count)))
         pprint.pprint(classes_count)
         print(f'Train size: {len(train_meta)}, validation size: {len(val_meta)}')
+        print('--------------------------------------')
 
     # write to files
     with open(os.path.join(basedir, 'annotations.json'), 'w') as fw:
