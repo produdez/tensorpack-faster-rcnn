@@ -1,4 +1,5 @@
 from .dataset import *
 from .coco import *
 from .balloon import *
-from .simpson import *
+from .simpson import SimpsonDemo, register_simpson
+
