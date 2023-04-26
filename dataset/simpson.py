@@ -5,6 +5,10 @@ import json
 from dataset import DatasetSplit, DatasetRegistry
 import random
 import argparse
+from viz import draw_annotation
+from config import config as cfg
+from PIL import Image
+import cv2
 
 '''
     Included an example.simpson.ipynb for reference (ran on colab)
@@ -201,12 +205,6 @@ def register_simpson(basedir):
         print('----')
 
 def test_data_visuals(basedir, visualize_subfolder = 'temp_output'):
-    from PIL import Image
-    from viz import draw_annotation
-    import cv2
-    from config import config as cfg
-
-
     json_file = os.path.join(basedir, "annotations.json")
     with open(json_file) as f:
         obj = json.load(f)
