@@ -92,18 +92,18 @@ def do_evaluate(pred_config, output_file):
         output = output_file + '-' + dataset
         DatasetRegistry.get(dataset).eval_inference_results(all_results, output)
 
-def predict_folder(predictor, folder_name):
+def predict_folder(predictor, folder_to_predict, output_folder):
     valid_results = []
-    for file in os.listdir(folder_name):
-        file_path = os.path.join(folder_name, file)
-        result = do_predict(predictor, file_path)
+    for file in os.listdir(folder_to_predict):
+        file_path = os.path.join(folder_to_predict, file)
+        result = do_predict(predictor, file_path, output_folder)
         if result: valid_results.append(result)
     
     if not valid_results:
         logger.warning('NO VALID RESULT IN THE WHOLE PREDICTION SET, your training might be invalid')
 
 
-def do_predict(pred_func, input_file, output_folder = './prediction', show=False):
+def do_predict(pred_func, input_file, output_folder, show=False):
     if not os.path.isdir(output_folder): os.mkdir(output_folder)
 
     img = cv2.imread(input_file, cv2.IMREAD_COLOR)
@@ -115,10 +115,10 @@ def do_predict(pred_func, input_file, output_folder = './prediction', show=False
         final = draw_final_outputs(img, results)
     viz = np.concatenate((img, final), axis=1)
 
-    output_filename = f"pred_{input_file.split('/')[-1]}.png"
+    output_filename = f"{input_file.split('/')[-1]}.png"
     output_path = os.path.join(output_folder, output_filename)
     cv2.imwrite(output_path, viz)
-    logger.info("Inference output for {} written to {}".format(input_file, output_path))
+    logger.info(f"Inference output for {input_file} written to {output_path}")
 
     # NOTE: this to suppress prediction error when ran on Colab since interactive visuals cannot be drawn there
     if show: tpviz.interactive_imshow(viz)
@@ -138,6 +138,7 @@ if __name__ == '__main__':
     parser.add_argument('--output-pb', help='Save a model to .pb')
     parser.add_argument('--output-serving', help='Save a model to serving file')
     parser.add_argument('--predict-folder', help='Predict a whole folder')
+    parser.add_argument('--output-folder', help='Output folder for predictions', required=False, type=str, default='./prediction')
     args = parser.parse_args()
     if args.config:
         cfg.update_args(args.config)
@@ -173,11 +174,11 @@ if __name__ == '__main__':
 
         if args.predict_folder:
             predictor = OfflinePredictor(predcfg)
-            predict_folder(predictor, args.predict_folder)
+            predict_folder(predictor, args.predict_folder, args.output_folder)
         elif args.predict:
             predictor = OfflinePredictor(predcfg)
             for image_file in args.predict:
-                do_predict(predictor, image_file)
+                do_predict(predictor, image_file, args.output_folder)
         elif args.evaluate:
             assert args.evaluate.endswith('.json'), args.evaluate
             do_evaluate(predcfg, args.evaluate)
