@@ -34,8 +34,10 @@ from dataset import DatasetSplit, DatasetRegistry
         - Train with proper TRAIN.STEPS_PER_EPOCH and see results
 '''
 
+IMAGE_SUBFOLDER = 'simpsons_dataset'
+
 class SimpsonDemo(DatasetSplit):
-    def __init__(self, base_dir, split, image_subfolder):
+    def __init__(self, base_dir, split, image_subfolder=IMAGE_SUBFOLDER):
         assert split in ["train", "val"]
         base_dir = os.path.expanduser(base_dir)
         self.imgdir = os.path.join(base_dir, image_subfolder)

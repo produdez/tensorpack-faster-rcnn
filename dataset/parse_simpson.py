@@ -6,7 +6,7 @@ from PIL import Image
 import cv2
 import os
 from config import config as cfg
-from .simpson import SimpsonDemo
+from .simpson import SimpsonDemo, IMAGE_SUBFOLDER
 import json 
 import numpy as np
 
@@ -14,7 +14,6 @@ import numpy as np
 CLASS_LIMIT = 99 # simpson dataset have 18 classes
 VALIDATION_SIZE = 0.5 # minium validation size for 19 classed to be validly trained
 BASE_DIR = './data/simpson'
-IMAGE_SUBFOLDER = 'simpsons_dataset'
 
 
 def split_train_val(all_imgs, classes_count, validation_size):
@@ -122,7 +121,7 @@ def process_annotations(
         }, fw, indent=4)
 
 
-def test_data_visuals(basedir, visualize_subfolder = 'temp_output', image_subfolder=IMAGE_SUBFOLDER):
+def test_data_visuals(basedir, visualize_subfolder = 'temp_output'):
     json_file = os.path.join(basedir, "annotations.json")
     with open(json_file) as f:
         obj = json.load(f)
@@ -131,7 +130,7 @@ def test_data_visuals(basedir, visualize_subfolder = 'temp_output', image_subfol
     #! This is for the draw_annotation function to know our classes
     cfg.DATA.CLASS_NAMES = class_names 
     
-    roidbs = SimpsonDemo(basedir, "train", image_subfolder).training_roidbs()
+    roidbs = SimpsonDemo(basedir, "train").training_roidbs()
 
     visualization_folder = os.path.join(basedir, visualize_subfolder)
     if not os.path.isdir(visualization_folder): os.mkdir(visualization_folder)
