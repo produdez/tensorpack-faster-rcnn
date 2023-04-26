@@ -120,8 +120,8 @@ def split_train_val(all_imgs, classes_count, validation_size):
 '''
 def process_annotations(
         basedir, 
-        validation_size,
         class_limit,
+        validation_size,
         image_subfolder=IMAGE_SUBFOLDER
     ):
     print(f'Number of training classes limit: {class_limit}')   
