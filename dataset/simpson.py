@@ -12,6 +12,7 @@ from config import config as cfg # TODO: remove later
 
 # CLASS_LIMIT = 10
 CLASS_LIMIT = 99
+VALIDATION_SIZE = 0.7
 
 '''
     ! IMPORTANT TRAINING NOTE:
@@ -64,8 +65,7 @@ class SimpsonDemo(DatasetSplit):
 
 
 
-# def process_annotations(basedir, image_subfolder = 'simpsons_dataset', validation_size = 0.7):
-def process_annotations(basedir, image_subfolder = 'simpsons_dataset', validation_size = 0.5):
+def process_annotations(basedir, image_subfolder = 'simpsons_dataset', validation_size = VALIDATION_SIZE):
     print('---- Annotation Processing Params ----')
     print(f'Number of training classes limit: {CLASS_LIMIT}')   
     print(f'Training size: {1 - validation_size}')
