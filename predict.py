@@ -108,7 +108,8 @@ def do_predict(pred_func, input_file, output_folder, show=False):
 
     img = cv2.imread(input_file, cv2.IMREAD_COLOR)
     results = predict_image(img, pred_func)
-    if not results: logger.warning(f'Empty predictions for image file: {input_file}')
+    if not results: logger.warning(f'Empty predictions for image file: {input_file.split("/")[-1]}')
+
     if cfg.MODE_MASK:
         final = draw_final_outputs_blackwhite(img, results)
     else:
