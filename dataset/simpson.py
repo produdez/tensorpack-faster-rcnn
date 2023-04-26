@@ -42,8 +42,46 @@ IMAGE_SUBFOLDER = 'simpsons_dataset'
         - Train with proper TRAIN.STEPS_PER_EPOCH and see results
 '''
 
-# ------ PRIVATE METHODS
-def _split_train_val(all_imgs, classes_count, validation_size):
+class SimpsonDemo(DatasetSplit):
+    def __init__(self, base_dir, split, image_subfolder=IMAGE_SUBFOLDER):
+        assert split in ["train", "val"]
+        base_dir = os.path.expanduser(base_dir)
+        self.imgdir = os.path.join(base_dir, image_subfolder)
+        self.base_dir = base_dir
+        self.split = split
+        assert os.path.isdir(self.imgdir), self.imgdir
+
+    '''
+        training_roidbs just reads from annotation.json and parse to correct format
+    '''
+    def training_roidbs(self):
+        json_file = os.path.join(self.base_dir, "annotations.json")
+        with open(json_file) as f:
+            obj = json.load(f)[self.split]
+        
+        formated = map(lambda val: {
+            'file_name': val['file_name'],
+            'boxes' : np.asarray(val['boxes'], dtype=np.float32),
+            'class' : np.asarray(val['class'], dtype=np.int32),
+            'is_crowd': np.asarray( [0], dtype=np.int8),
+        }, obj)
+        
+        result = list(formated)
+
+        print('Example roidb: ', result[0])
+        ''' Should be:
+            {
+                'file_name': './data/balloon/train/34020010494_e5cb88e1c4_k.jpg', 
+                'boxes': array([[ 994.5,  619.5, 1445.5, 1166.5]], dtype=float32), 
+                'class': array([1], dtype=int32), 
+                'is_crowd': array([0], dtype=int8)
+            }
+        '''
+        return result
+
+
+
+def split_train_val(all_imgs, classes_count, validation_size):
     '''
         This function will try balance of classes
         1. train size is based on the count of the smallest class (class with least samples)
@@ -80,7 +118,7 @@ def _split_train_val(all_imgs, classes_count, validation_size):
         bounding box parsing is based on code from the following project
     https://github.com/duckrabbits/ObjectDetection/blob/master/model/parser.py
 '''
-def _process_annotations(
+def process_annotations(
         basedir, 
         class_limit,
         validation_size,
@@ -134,7 +172,7 @@ def _process_annotations(
                 all_imgs[filename]['class'] = [class_mapping[class_name]]
                 all_imgs[filename]['classname'] = [class_name]
 
-        train_meta, val_meta = _split_train_val(all_imgs, classes_count, validation_size)
+        train_meta, val_meta = split_train_val(all_imgs, classes_count, validation_size)
 
     # write to file
     with open(os.path.join(basedir, 'annotations.json'), 'w') as fw:
@@ -147,8 +185,22 @@ def _process_annotations(
             'val': val_meta,
         }, fw, indent=4)
 
+def register_simpson(basedir):
+    try:
+        json_file = os.path.join(basedir, "annotations.json")
+        with open(json_file) as f:
+            obj = json.load(f)
+        class_names = list(obj['classes']['mapping'].keys())
+        for split in ['train', 'val']:
+            name = "simpson_" + split
+            DatasetRegistry.register(name, lambda x=split: SimpsonDemo(basedir, x))
+            DatasetRegistry.register_metadata(name, "class_names", class_names)
+    except Exception as e:
+        print('WRN: If your not training/testing on simpson dataset, ignore this error!')
+        print(e)
+        print('----')
 
-def _test_data_visuals(basedir, visualize_subfolder = 'temp_output'):
+def test_data_visuals(basedir, visualize_subfolder = 'temp_output'):
     from PIL import Image
     from viz import draw_annotation
     import cv2
@@ -185,61 +237,6 @@ def _test_data_visuals(basedir, visualize_subfolder = 'temp_output'):
     print('Example data visualizations are in ', visualization_folder)
 
 
-
-# ------ PUBLIC METHODS
-class SimpsonDemo(DatasetSplit):
-    def __init__(self, base_dir, split, image_subfolder=IMAGE_SUBFOLDER):
-        assert split in ["train", "val"]
-        base_dir = os.path.expanduser(base_dir)
-        self.imgdir = os.path.join(base_dir, image_subfolder)
-        self.base_dir = base_dir
-        self.split = split
-        assert os.path.isdir(self.imgdir), self.imgdir
-
-    '''
-        training_roidbs just reads from annotation.json and parse to correct format
-    '''
-    def training_roidbs(self):
-        json_file = os.path.join(self.base_dir, "annotations.json")
-        with open(json_file) as f:
-            obj = json.load(f)[self.split]
-        
-        formated = map(lambda val: {
-            'file_name': val['file_name'],
-            'boxes' : np.asarray(val['boxes'], dtype=np.float32),
-            'class' : np.asarray(val['class'], dtype=np.int32),
-            'is_crowd': np.asarray( [0], dtype=np.int8),
-        }, obj)
-        
-        result = list(formated)
-
-        print('Example roidb: ', result[0])
-        ''' Should be:
-            {
-                'file_name': './data/balloon/train/34020010494_e5cb88e1c4_k.jpg', 
-                'boxes': array([[ 994.5,  619.5, 1445.5, 1166.5]], dtype=float32), 
-                'class': array([1], dtype=int32), 
-                'is_crowd': array([0], dtype=int8)
-            }
-        '''
-        return result
-
-def register_simpson(basedir):
-    try:
-        json_file = os.path.join(basedir, "annotations.json")
-        with open(json_file) as f:
-            obj = json.load(f)
-        class_names = list(obj['classes']['mapping'].keys())
-        for split in ['train', 'val']:
-            name = "simpson_" + split
-            DatasetRegistry.register(name, lambda x=split: SimpsonDemo(basedir, x))
-            DatasetRegistry.register_metadata(name, "class_names", class_names)
-    except Exception as e:
-        print('WRN: If your not training/testing on simpson dataset, ignore this error!')
-        print(e)
-        print('----')
-
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -261,7 +258,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     
     # Main part
-    _process_annotations(args.basedir, args.class_limit, args.validation_size)
+    process_annotations(args.basedir, args.class_limit, args.validation_size)
 
     if args.visualize:
-        _test_data_visuals(args.basedir)
+        test_data_visuals(args.basedir)
