@@ -145,7 +145,7 @@ if __name__ == '__main__':
         cfg.update_args(args.config)
     register_coco(cfg.DATA.BASEDIR)  # add COCO datasets to the registry
     register_balloon(cfg.DATA.BASEDIR)
-    register_simpson(cfg.DATA.BASEDIR, process_raw_annotations=False) # this assumes that you already parsed the simpson annotations
+    register_simpson(cfg.DATA.BASEDIR)
 
     MODEL = ResNetFPNModel() if cfg.MODE_FPN else ResNetC4Model()
 
