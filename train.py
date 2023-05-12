@@ -6,7 +6,7 @@ import argparse
 from tensorpack import *
 from tensorpack.tfutils import collect_env_info
 
-from dataset import register_coco, register_balloon
+from dataset import register_coco, register_balloon, register_simpson
 from config import config as cfg
 from config import finalize_configs
 from data import get_train_dataflow
@@ -31,13 +31,14 @@ if __name__ == '__main__':
     parser.add_argument('--logdir', help='Log directory. Will remove the old one if already exists.',
                         default='train_log/maskrcnn')
     parser.add_argument('--config', help="A list of KEY=VALUE to overwrite those defined in config.py", nargs='+')
+    parser.add_argument('--max-epochs', help='Maximum number of training epoch (OVERRIDE)', type=int, required=False, default=None)
 
     args = parser.parse_args()
     if args.config:
         cfg.update_args(args.config)
     register_coco(cfg.DATA.BASEDIR)  # add COCO datasets to the registry
     register_balloon(cfg.DATA.BASEDIR)  # add the demo balloon datasets to the registry
-
+    register_simpson(cfg.DATA.BASEDIR) # try to add the simpson dataset (keyword try)
     # Setup logging ...
     is_horovod = cfg.TRAINER == 'horovod'
     if is_horovod:
@@ -69,7 +70,6 @@ if __name__ == '__main__':
     train_dataflow = get_train_dataflow()
     # This is what's commonly referred to as "epochs"
     total_passes = cfg.TRAIN.LR_SCHEDULE[-1] * 8 / train_dataflow.size()
-    logger.info("Total passes of the training set is: {:.5g}".format(total_passes))
 
     # Create callbacks ...
     callbacks = [
@@ -102,15 +102,22 @@ if __name__ == '__main__':
         else:
             session_init = SmartInit(cfg.BACKBONE.WEIGHTS)
 
+    MAX_EPOCH = cfg.TRAIN.LR_SCHEDULE[-1] * factor // stepnum
+    if args.max_epochs: MAX_EPOCH = args.max_epochs
+    
     traincfg = TrainConfig(
         model=MODEL,
         data=QueueInput(train_dataflow),
         callbacks=callbacks,
         steps_per_epoch=stepnum,
-        max_epoch=cfg.TRAIN.LR_SCHEDULE[-1] * factor // stepnum,
+        max_epoch=MAX_EPOCH,
         session_init=session_init,
         starting_epoch=cfg.TRAIN.STARTING_EPOCH
     )
+
+    logger.info(f'MAX EPOCH= {MAX_EPOCH}')
+    logger.info(f'Epoch size - Step num - samples per epoch: {stepnum}')
+    logger.info("Total passes of the training set is: {:.5g}".format(total_passes))
 
     if is_horovod:
         trainer = HorovodTrainer(average=False)

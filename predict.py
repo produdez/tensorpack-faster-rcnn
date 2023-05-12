@@ -15,7 +15,7 @@ from tensorpack.tfutils import SmartInit, get_tf_version_tuple
 from tensorpack.tfutils.export import ModelExporter
 from tensorpack.utils import fs, logger
 
-from dataset import DatasetRegistry, register_coco, register_balloon
+from dataset import DatasetRegistry, register_coco, register_balloon, register_simpson
 from config import config as cfg
 from config import finalize_configs
 from data import get_eval_dataflow, get_train_dataflow
@@ -92,19 +92,38 @@ def do_evaluate(pred_config, output_file):
         output = output_file + '-' + dataset
         DatasetRegistry.get(dataset).eval_inference_results(all_results, output)
 
+def predict_folder(predictor, folder_to_predict, output_folder):
+    valid_results = []
+    for file in os.listdir(folder_to_predict):
+        file_path = os.path.join(folder_to_predict, file)
+        result = do_predict(predictor, file_path, output_folder)
+        if result: valid_results.append(result)
+    
+    if not valid_results:
+        logger.warning('NO VALID RESULT IN THE WHOLE PREDICTION SET, your training might be invalid')
 
-def do_predict(pred_func, input_file):
+
+def do_predict(pred_func, input_file, output_folder, show=False):
+    if not os.path.isdir(output_folder): os.mkdir(output_folder)
+
     img = cv2.imread(input_file, cv2.IMREAD_COLOR)
     results = predict_image(img, pred_func)
+    if not results: logger.warning(f'Empty predictions for image file: {input_file.split("/")[-1]}')
+
     if cfg.MODE_MASK:
         final = draw_final_outputs_blackwhite(img, results)
     else:
         final = draw_final_outputs(img, results)
     viz = np.concatenate((img, final), axis=1)
-    cv2.imwrite("output.png", viz)
-    logger.info("Inference output for {} written to output.png".format(input_file))
-    tpviz.interactive_imshow(viz)
 
+    output_filename = f"{input_file.split('/')[-1]}.png"
+    output_path = os.path.join(output_folder, output_filename)
+    cv2.imwrite(output_path, viz)
+    logger.info(f"Inference output for {input_file} written to {output_path}")
+
+    # NOTE: this to suppress prediction error when ran on Colab since interactive visuals cannot be drawn there
+    if show: tpviz.interactive_imshow(viz)
+    return results
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -119,12 +138,14 @@ if __name__ == '__main__':
                         nargs='+')
     parser.add_argument('--output-pb', help='Save a model to .pb')
     parser.add_argument('--output-serving', help='Save a model to serving file')
-
+    parser.add_argument('--predict-folder', help='Predict a whole folder', required=False, type=str, default=None)
+    parser.add_argument('--output-folder', help='Output folder for predictions', required=False, type=str, default='./prediction')
     args = parser.parse_args()
     if args.config:
         cfg.update_args(args.config)
     register_coco(cfg.DATA.BASEDIR)  # add COCO datasets to the registry
     register_balloon(cfg.DATA.BASEDIR)
+    register_simpson(cfg.DATA.BASEDIR)
 
     MODEL = ResNetFPNModel() if cfg.MODE_FPN else ResNetC4Model()
 
@@ -135,7 +156,7 @@ if __name__ == '__main__':
     assert args.load
     finalize_configs(is_training=False)
 
-    if args.predict or args.visualize:
+    if args.predict or args.visualize or args.predict_folder:
         cfg.TEST.RESULT_SCORE_THRESH = cfg.TEST.RESULT_SCORE_THRESH_VIS
 
     if args.visualize:
@@ -152,10 +173,13 @@ if __name__ == '__main__':
         elif args.output_serving:
             ModelExporter(predcfg).export_serving(args.output_serving)
 
-        if args.predict:
+        if args.predict_folder:
+            predictor = OfflinePredictor(predcfg)
+            predict_folder(predictor, args.predict_folder, args.output_folder)
+        elif args.predict:
             predictor = OfflinePredictor(predcfg)
             for image_file in args.predict:
-                do_predict(predictor, image_file)
+                do_predict(predictor, image_file, args.output_folder)
         elif args.evaluate:
             assert args.evaluate.endswith('.json'), args.evaluate
             do_evaluate(predcfg, args.evaluate)
